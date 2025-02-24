@@ -8,11 +8,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 var connectionString = builder.Configuration.GetConnectionString("MyConn");
-
 builder.Services.AddSqlServerServices(connectionString);
 builder.Services.AddApplicationServices();
 
 var app = builder.Build();
+app.UseMiddleware<RateLimitMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
