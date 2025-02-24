@@ -48,6 +48,7 @@ public class SqlCustomerRepository : BaseSqlRepository, ICustomerRepository
     {
         throw new NotImplementedException();
     }
+    
 
     public IQueryable<Customer> GetAll()
     {

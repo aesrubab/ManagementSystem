@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using AutoMapper;
+using FluentValidation;
 using ManagementSystem.Application.CQRS.Customers.Commands.Requests;
 using ManagementSystem.Application.CQRS.Customers.Commands.Responses;
 using ManagementSystem.Common.GlobalResponses.Generics;
@@ -6,29 +7,33 @@ using ManagementSystem.Domain.Entities;
 using ManagementSystem.Repository.Common;
 using MediatR;
 
-namespace ManagementSystem.Application.CQRS.Customers.Handlers.CommandHandler;
-
-public class CreateCustmerHandler(IUnitOfWork unitOfWork) : IRequestHandler<CreateCustomerRequest, Result<CreateCustomerResponse>>
+namespace ManagementSystem.Application.CQRS.Customers.Handlers.CommandHandler
 {
-    private readonly IUnitOfWork _unitOfWork = unitOfWork;
-
-
-    public async Task<Result<CreateCustomerResponse>> Handle(CreateCustomerRequest request, CancellationToken cancellationToken)
+    public class CreateCustomerHandler : IRequestHandler<CreateCustomerRequest, Result<CreateCustomerResponse>>
     {
-        Customer newCustomer = new(request.Name, request.Email);
-        await _unitOfWork.CustomerRepository.AddAsync(newCustomer);
-        CreateCustomerResponse response = new()
-        {
-            Id = newCustomer.Id,
-            Name = newCustomer.Name,
-            Email = newCustomer.Email,
-        };
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        return new Result<CreateCustomerResponse>()
+        public CreateCustomerHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            Data = response,
-            Errors = [],
-            IsSuccess = true
-        };
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
+        public async Task<Result<CreateCustomerResponse>> Handle(CreateCustomerRequest request, CancellationToken cancellationToken)
+        {
+            Customer newCustomer = _mapper.Map<Customer>(request);
+
+            await _unitOfWork.CustomerRepository.AddAsync(newCustomer);
+
+            CreateCustomerResponse response = _mapper.Map<CreateCustomerResponse>(newCustomer);
+
+            return new Result<CreateCustomerResponse>()
+            {
+                Data = response,
+                Errors = new List<string>(),  
+                IsSuccess = true
+            };
+        }
     }
 }
